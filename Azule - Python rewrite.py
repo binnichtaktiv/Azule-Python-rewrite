@@ -2,47 +2,30 @@ import os
 import shutil
 import subprocess
 import platform
-import argparse
+import time
 
+#trash
 
+deb_file = r"C:\Users\jonas\Downloads\Telegram Desktop\com.dvntm.youtubeplus_2.3_iphoneos-arm.deb"
+output_dir = r"C:\Users\jonas\Desktop"
+#trash
 
-
-
-
-print("[-i] Specify the the IPA to patch")
+print("[-i] Specify the IPA to patch")
 print("[-o] Specify an output directory")
 print("[-f] Specify the files or tweaks")
-print("[-n] Specify a name for the Output iPA")
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--arg1', nargs='+', help='Erstes Argument')
-parser.add_argument('-i', '--arg2', nargs='+', help='Zweites Argument')
-parser.add_argument('-r', '--arg3', nargs='+', help='Drittes Argument')
-
-# Benutzereingabe abfragen
-flags = input("Gib die Flags mit den Werten ein: ")
-
-# args parsen
-parsed_args, unknown = parser.parse_known_args(flags.split())
-
-arg1 = parsed_args.arg1 if parsed_args.arg1 else []
-arg2 = parsed_args.arg2 if parsed_args.arg2 else []
-arg3 = parsed_args.arg3 if parsed_args.arg3 else []
-
-print("Erstes Argument:", arg1)
-print("Zweites Argument:", arg2)
-print("Drittes Argument:", arg3)
-
-
+print("[-n] Specify a name for the Output IPA")
 
 def extract_deb(deb_file, output_dir):
     if platform.system() == 'Linux':
         subprocess.call(['dpkg-deb', '-x', deb_file, output_dir])
     elif platform.system() == 'Darwin':
         subprocess.call(['sudo', 'ditto', '-x', '-k', deb_file, output_dir])
-    #elif platform.system() == 'Windows':
-        # yeah idk - manual extraction needed
+    elif platform.system() == 'Windows':
+        subprocess.call([r"C:\Program Files\7-Zip\7z.exe", "x", "-y", f"-o{output_dir}", deb_file])
+        time.sleep(2)
+        data_tar = output_dir + "\data.tar"
+        subprocess.call([r"C:\Program Files\7-Zip\7z.exe", "x", "-y", f"-o{output_dir}", data_tar])
+        os.remove(data_tar)
 
 def find_dylib_files(path):
     dylib_files = []
@@ -52,12 +35,30 @@ def find_dylib_files(path):
                 dylib_files.append(os.path.join(root, file))
     return dylib_files
 
-deb_file_path = 'path/to/deb_file.deb'
+deb_file_path = r'C:\Users\jonas\Downloads\Telegram Desktop\com.dvntm.youtubeplus_2.3_iphoneos-arm.deb'
+output_dir = r'C:\Users\jonas\Desktop'
 
-output_dir = 'path/to/output_dir'
+if platform.system == 'Windows':
+    extracted_dir = os.path.join(output_dir, 'Library')
+    extract_deb(deb_file_path, extracted_dir)
 
-extract_deb(deb_file_path, output_dir)
+    dylib_files = find_dylib_files(extracted_dir)
 
-dylib_files = find_dylib_files(output_dir)
+    temp_dir = os.path.join(output_dir, 'temp')
+    os.makedirs(temp_dir, exist_ok=True)
 
-print(dylib_files)
+    for dylib_file in dylib_files:
+        shutil.copy(dylib_file, temp_dir)
+        shutil.rmtree(extracted_dir)
+else:
+    extracted_dir = os.path.join(output_dir, 'extracted_deb')
+    extract_deb(deb_file_path, extracted_dir)
+
+    dylib_files = find_dylib_files(extracted_dir)
+
+    temp_dir = os.path.join(output_dir, 'temp')
+    os.makedirs(temp_dir, exist_ok=True)
+
+    for dylib_file in dylib_files:
+        shutil.copy(dylib_file, temp_dir)
+        shutil.rmtree(extracted_dir)
