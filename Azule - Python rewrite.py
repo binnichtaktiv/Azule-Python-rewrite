@@ -5,7 +5,6 @@ import platform
 import time
 import patoolib
 
-
 deb_file = r"C:\Users\jonas\Downloads\Telegram Desktop\com.dvntm.youtubeplus_2.3_iphoneos-arm.deb"
 output_dir = r"C:\Users\jonas\Desktop"
 
@@ -18,7 +17,7 @@ def extract_deb(deb_file, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    patoolib.extract_archive(deb_file, outdir=output_dir)
+    patoolib.extract_archive(deb_file, outdir=output_dir, verbosity=-1)
 
     data_file = None
     for file in os.listdir(output_dir):
@@ -27,13 +26,13 @@ def extract_deb(deb_file, output_dir):
             break
 
     if data_file:
-        patoolib.extract_archive(data_file, outdir=output_dir)
+        patoolib.extract_archive(data_file, outdir=output_dir, verbosity=-1)
         os.remove(data_file)
     else:
         pass
 
-deb_file = "/Users/jonasb./Desktop/azule test/ytcl.deb"
-output_dir = "/Users/jonasb./Desktop/azule test"
+deb_file = r"C:\Users\jonas\Downloads\Telegram Desktop\GPS Faker SnapChat.deb"
+output_dir = r"C:\Users\jonas\Downloads\Telegram Desktop"
 
 extract_deb(deb_file, output_dir)
 
