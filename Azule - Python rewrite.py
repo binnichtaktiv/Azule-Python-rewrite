@@ -1,8 +1,6 @@
 import os
 import shutil
-import subprocess
 import platform
-import time
 import patoolib
 import shlex
 
@@ -13,12 +11,12 @@ def clear_terminal():
     elif os.name == 'posix':
         os.system('clear')
 
+
 print("Azule: A CLI tool used to inject iOS jailbreak tweaks into jailed iOS apps.")
 print("Features: \nInject debs/dylibs\nmore features will be added later")
 
 start = input("\n\nenter 'start' to start injecting.\n")
 clear_terminal()
-
 
 if start == 'start':
     file_paths_input = input("Enter the path to your .deb/.dylib. (There can be several at once):\n ")
@@ -29,27 +27,22 @@ if start == 'start':
     if not os.path.exists(deb_tmp):
         os.makedirs(deb_tmp)
 
-    file_paths = shlex.split(file_paths_input)
+    if os.name == 'nt':
+        file_paths = shlex.split(file_paths_input, posix=False)
+    else:
+        file_paths = shlex.split(file_paths_input)
+
     for path in file_paths:
         patoolib.extract_archive(path, outdir=deb_tmp, verbosity=-1)
-    clear_terminal()
-
-    def extract_deb(deb_file, output_dir):
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
-        data_file = None
-        for file in os.listdir(output_dir):
+        data_tar_file = None
+        for file in os.listdir(deb_tmp):
             if file.startswith("data.tar"):
-                data_file = os.path.join(output_dir, file)
+                data_tar_file = os.path.join(deb_tmp, file)
                 break
-
-        if data_file:
-            patoolib.extract_archive(data_file, outdir=output_dir, verbosity=-1)
-            os.remove(data_file)
-
-    for path in file_paths:
-        extract_deb(path, deb_tmp)
+        if data_tar_file:
+            patoolib.extract_archive(data_tar_file, outdir=deb_tmp, verbosity=-1)
+            os.remove(data_tar_file)
+    clear_terminal()
 
     def find_dylib_files(path):
         dylib_files = []
